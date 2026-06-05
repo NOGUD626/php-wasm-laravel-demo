@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>php-wasm Laravel demo — ブラウザ内だけで Laravel を動かす</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; line-height: 1.6; }
+      h1 { font-size: 20px; }
+      .sub { color: #888; font-size: 13px; margin-top: -8px; }
+      .row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+      .col { flex: 1 1 420px; min-width: 320px; }
+      button { font-size: 14px; padding: 8px 14px; border-radius: 8px; border: 1px solid #4445; cursor: pointer; }
+      button:disabled { opacity: .45; cursor: not-allowed; }
+      #boot { background: #ef4444; color: #fff; border: none; font-weight: 700; }
+      .api { background: #3b82f6; color: #fff; border: none; }
+      #status { margin: 12px 0; }
+      pre { background: #0b1020; color: #d6e2ff; padding: 12px; border-radius: 8px; overflow: auto; max-height: 340px; font-size: 12px; }
+      iframe { width: 100%; height: 420px; border: 1px solid #4445; border-radius: 8px; background: #fff; }
+      .hidden { display: none; }
+      #preview-placeholder { display: grid; place-items: center; height: 420px; border: 1px dashed #4446; border-radius: 8px; color: #888; }
+      .badge { display: inline-block; background: #1112; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>🐘 php-wasm Laravel demo</h1>
+    <p class="sub">
+      バックエンドサーバー無し。<b>本物の Laravel 13 + PHP 8.4</b> を
+      <span class="badge">WebAssembly</span> でブラウザのタブの中だけで動かします。
+    </p>
+
+    <button id="boot">▶ php-wasm を起動して Laravel を立てる</button>
+    <p id="status">状態: <b>未起動</b></p>
+
+    <div class="row">
+      <div class="col">
+        <h3>起動ログ</h3>
+        <pre id="log">（「起動」を押すとここにログが流れます）</pre>
+
+        <h3>ルートを叩く</h3>
+        <p>
+          <button class="api" data-path="/" disabled>GET /</button>
+          <button class="api" data-path="/demo" disabled>GET /demo (JSON)</button>
+        </p>
+        <pre id="result">（API レスポンスがここに出ます）</pre>
+      </div>
+
+      <div class="col">
+        <h3>プレビュー（iframe・リンク遷移できます）</h3>
+        <div id="preview-placeholder">起動するとここに Laravel のミニサイトが出ます（ナビのリンクで遷移可）</div>
+        <iframe
+          id="preview"
+          class="hidden"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        ></iframe>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

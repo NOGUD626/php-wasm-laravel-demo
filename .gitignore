@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.log
+public/laravel-app.zip
+laravel-app/vendor/
+laravel-app/node_modules/
+
+# OS / エディタ
+.DS_Store
+.idea/
+.vscode/
+
+# 環境変数 (防御的: laravel-app/.gitignore でも除外済み)
+.env
+*.local

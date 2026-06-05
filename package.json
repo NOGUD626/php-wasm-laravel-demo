@@ -1,0 +1,28 @@
+{
+  "name": "php-wasm-laravel-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "verify:php": "node scripts/verify-php.mjs",
+    "verify:laravel": "node scripts/verify-laravel.mjs",
+    "verify:browser": "node scripts/verify-browser.mjs",
+    "verify:nav": "node scripts/verify-navigation.mjs",
+    "shots": "node scripts/screenshots.mjs",
+    "bundle": "node scripts/bundle-laravel.mjs",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@php-wasm/node": "^3.1.36",
+    "@php-wasm/universal": "^3.1.36",
+    "@php-wasm/web": "^3.1.36",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0"
+  }
+}
