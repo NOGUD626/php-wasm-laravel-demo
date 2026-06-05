@@ -13,3 +13,6 @@ laravel-app/node_modules/
 # 環境変数 (防御的: laravel-app/.gitignore でも除外済み)
 .env
 *.local
+
+# Zenn 記事ソース (リポジトリには上げない)
+articles/
