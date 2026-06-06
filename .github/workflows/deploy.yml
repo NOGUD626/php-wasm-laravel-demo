@@ -1,0 +1,82 @@
+name: Deploy to GitHub Pages
+
+# main へ push したら自動デプロイ、手動キックも可能。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# actions/deploy-pages が要求する権限。
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時実行をひとつに絞り、進行中のデプロイはキャンセルせず待つ。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+          coverage: none
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Laravel 本体の依存解決。--no-dev で配信サイズを節約。
+      - name: Composer install (laravel-app)
+        working-directory: laravel-app
+        run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+
+      # Laravel は APP_KEY と .env が無いと動かないので CI 時に生成する。
+      # ここで作った .env がそのまま laravel-app.zip にバンドルされ、
+      # 起動時に php-host.ts が APP_URL を実オリジン+/laravel に書き換える。
+      - name: Prepare Laravel .env
+        working-directory: laravel-app
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: NPM install
+        run: npm ci
+
+      # public/laravel-app.zip を生成 (gitignore 済み・実行に必要)
+      - name: Bundle Laravel into zip
+        run: npm run bundle
+
+      # GitHub Pages のプロジェクトページは https://<user>.github.io/<repo>/ 配信なので
+      # Vite の base にリポジトリ名を渡してアセットパスをサブパス基準に書き換える。
+      - name: Build (Vite)
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
