@@ -45,11 +45,19 @@ jobs:
       # Laravel は APP_KEY と .env が無いと動かないので CI 時に生成する。
       # ここで作った .env がそのまま laravel-app.zip にバンドルされ、
       # 起動時に php-host.ts が APP_URL を実オリジン+/laravel に書き換える。
-      - name: Prepare Laravel .env
+      #
+      # SQLite ファイルと migration もここで実行して zip に同梱する。
+      # Laravel 13 はセッション・キャッシュ・ジョブをすべて SQLite に保存する
+      # 構成のため、これが無いと最初のリクエストでセッション middleware が
+      # QueryException を投げて全ルート 500 になる。
+      - name: Prepare Laravel .env and seeded database
         working-directory: laravel-app
         run: |
           cp .env.example .env
           php artisan key:generate --force
+          mkdir -p database
+          touch database/database.sqlite
+          php artisan migrate --force
 
       - name: NPM install
         run: npm ci
