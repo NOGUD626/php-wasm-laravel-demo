@@ -26,7 +26,11 @@ export async function registerServiceWorker(
   if (!('serviceWorker' in navigator)) {
     throw new Error('この環境では Service Worker が使えません');
   }
-  const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+  // サブパス配信 (例 GitHub Pages '/php-wasm-laravel-demo/') にも対応するため、
+  // Vite の BASE_URL を sw.js のパスとスコープに用いる。
+  const base = import.meta.env.BASE_URL; // 末尾 '/' 付きの規約
+  const swPath = `${base}sw.js`.replace(/\/{2,}/g, '/');
+  const reg = await navigator.serviceWorker.register(swPath, { scope: base });
   await navigator.serviceWorker.ready;
   // 既にアクティブな SW がページを制御していない場合に備えて少し待つ
   if (!navigator.serviceWorker.controller) {
@@ -39,7 +43,7 @@ export async function registerServiceWorker(
       setTimeout(resolve, 1000);
     });
   }
-  onLog('[bridge] Service Worker registered (scope=/), state=' + (reg.active?.state ?? '?'));
+  onLog(`[bridge] Service Worker registered (scope=${base}), state=` + (reg.active?.state ?? '?'));
 }
 
 export function startPhpBridge(

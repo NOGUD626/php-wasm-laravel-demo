@@ -1,8 +1,17 @@
 // php-wasm Laravel demo の Service Worker。
-// 役割: iframe が /laravel/* を要求したら横取りし、メインページで動いている
+// 役割: iframe が <base>laravel/* を要求したら横取りし、メインページで動いている
 //       PHPRequestHandler(WASM の Laravel) に BroadcastChannel 経由で処理を依頼する。
 //       これにより iframe 内でリンク遷移・CSS/JS・画像読み込みが普通のサイトのように動く。
-const SCOPE_PREFIX = '/laravel';
+//
+// SCOPE_PREFIX は SW の登録スコープ (= Vite の base) から動的に算出する。
+//   - ルート配信:        '/laravel'
+//   - GitHub Pages 等:   '/php-wasm-laravel-demo/laravel'
+// SW では import.meta.env が使えないため self.registration.scope を pathname に落として導出。
+// scope は末尾スラッシュ付きの URL なので 'laravel' を素直に連結すればよい。
+const SCOPE_PREFIX = (() => {
+  const p = new URL(self.registration.scope).pathname; // 例: '/foo/'
+  return (p + 'laravel').replace(/\/{2,}/g, '/');
+})();
 const channel = new BroadcastChannel('php-wasm-bridge');
 const pending = new Map(); // id -> resolve
 

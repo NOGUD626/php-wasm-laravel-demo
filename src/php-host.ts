@@ -8,8 +8,11 @@ import type { AllPHPVersion, HTTPMethod } from '@php-wasm/universal';
 import { unzipSync } from 'fflate';
 
 // iframe ナビゲーションを Service Worker で中継するための URL スコープ。
-// absoluteUrl にこの接頭辞を付けると PHPRequestHandler が内部で剥がして配信する。
-export const URL_SCOPE = '/laravel';
+// サイトのデプロイ先サブパス (Vite の base) に追従するため import.meta.env.BASE_URL を前置する。
+//   - base='/'                          → '/laravel'
+//   - base='/php-wasm-laravel-demo/'    → '/php-wasm-laravel-demo/laravel'
+// BASE_URL は末尾スラッシュ付きの規約。
+export const URL_SCOPE = `${import.meta.env.BASE_URL}laravel`.replace(/\/{2,}/g, '/');
 
 export type BootOptions = {
   phpVersion?: string;
@@ -31,7 +34,8 @@ const DOC_ROOT = '/var/www';
 export async function bootLaravel(opts: BootOptions): Promise<LaravelHost> {
   const { onLog } = opts;
   const phpVersion = opts.phpVersion ?? '8.4';
-  const zipUrl = opts.zipUrl ?? '/laravel-app.zip';
+  // zip もサブパス配信に追従させる
+  const zipUrl = opts.zipUrl ?? `${import.meta.env.BASE_URL}laravel-app.zip`.replace(/\/{2,}/g, '/');
 
   onLog(`[host] loadWebRuntime(PHP ${phpVersion}) ...`);
   const t0 = performance.now();
